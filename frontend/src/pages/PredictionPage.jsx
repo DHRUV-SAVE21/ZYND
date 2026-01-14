@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Map, TrendingUp, CloudRain, Droplets, AlertTriangle, Clock, ChevronRight } from 'lucide-react';
+import { Map, TrendingUp, CloudRain, Droplets, AlertTriangle, Clock, ChevronRight, Activity } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 // Mock Data for Charts
