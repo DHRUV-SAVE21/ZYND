@@ -18,8 +18,8 @@ scikit-learn==1.4.0
 pandas==2.2.0
 numpy==1.26.3
 
-# ZYND AI Agent
-zyndai-agent==0.1.0
+# ZYND AI Agent (Optional - uncomment if you have access)
+# zyndai-agent==0.1.0
 
 # Weather & Geo APIs (removed httpx to fix conflict)
 requests==2.31.0
