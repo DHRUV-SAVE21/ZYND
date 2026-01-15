@@ -114,7 +114,7 @@ const Login = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-crisis-red/50 transition-colors font-mono"
-                                placeholder="operative@agency.org"
+                                placeholder="samarthbhirud480@gmail.com"
                                 required
                             />
                         </div>
@@ -126,7 +126,7 @@ const Login = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-crisis-red/50 transition-colors font-mono"
-                                placeholder="••••••••"
+                                placeholder="sam123"
                                 required
                             />
                         </div>
@@ -146,6 +146,12 @@ const Login = () => {
                             )}
                         </button>
                     </form>
+
+                    <div className="mt-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-center">
+                        <p className="text-xs text-yellow-400 font-mono">
+                            📌 Default Login: <span className="text-yellow-300">samarthbhirud480@gmail.com</span> / <span className="text-yellow-300">sam123</span>
+                        </p>
+                    </div>
 
                     <div className="mt-8 text-center">
                         <button
