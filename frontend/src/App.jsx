@@ -11,10 +11,14 @@ import { CrisisMarkers } from './components/CrisisMarkers';
 import CrisisDashboard from './components/CrisisDashboard';
 import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage';
+import PredictionPage from './pages/PredictionPage';
+import PublicAlertsPage from './pages/PublicAlertsPage';
 import ResourcesPage from './pages/ResourcesPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import Login from './components/Login';
 import IncidentReport from './components/IncidentReport';
+import EarlyWarningPanel from './components/EarlyWarningPanel';
+import Galaxy from './components/Galaxy';
 
 // Context
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -118,10 +122,16 @@ const MainApp = () => {
   const isLoginPage = location.pathname === '/login';
 
   return (
-    <div className="relative w-full h-screen bg-crisis-deep selection:bg-crisis-red/30 selection:text-white overflow-hidden">
+    <div className="relative w-full h-screen bg-crisis-deep selection:bg-crisis-red/30 selection:text-white overflow-hidden" style={{ backgroundColor: '#020617' }}>
+
+      {/* Global Galaxy Background */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-100">
+        <Galaxy density={1.5} />
+      </div>
 
       {/* 2D UI Layer - Navbar only shows if NOT on login page */}
       {!isLoginPage && <Navbar user={user} signOut={signOut} isSystemOnline={isSystemOnline} />}
+      {isSystemOnline && <EarlyWarningPanel />}
 
       {/* Content Routes - Scrollable Container for Pages */}
       <div className={`absolute inset-0 ${!isLoginPage ? 'pt-[80px]' : ''} z-20 overflow-y-auto custom-scrollbar pointer-events-none`}>
@@ -130,12 +140,18 @@ const MainApp = () => {
             {/* Public Routes */}
             <Route path="/" element={<Navigate to="/landing" replace />} />
             <Route path="/landing" element={<LandingPage onSystemInitialize={() => setIsSystemOnline(true)} />} />
+            <Route path="/public-alerts" element={<PublicAlertsPage />} />
             <Route path="/login" element={user ? <Navigate to="/intelligence" /> : <Login />} />
 
             {/* Protected Routes */}
             <Route path="/intelligence" element={
               <ProtectedRoute>
                 <CrisisDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/prediction" element={
+              <ProtectedRoute>
+                <PredictionPage />
               </ProtectedRoute>
             } />
             <Route path="/report" element={
@@ -159,9 +175,7 @@ const MainApp = () => {
 
       {/* 3D Scene Layer (Persistent Background) */}
       <div className="absolute inset-0 z-0 pointer-events-auto">
-        <Canvas camera={{ position: [0, 0, 10], fov: 35 }}>
-          <color attach="background" args={['#000000']} />
-
+        <Canvas camera={{ position: [0, 0, 10], fov: 35 }} gl={{ alpha: true }}>
           {/* Cinematic Lighting */}
           <ambientLight intensity={1.5} color="#8080ff" />
           <spotLight position={[50, 50, 50]} angle={0.2} penumbra={1} intensity={50} color="#ffffff" />
@@ -184,6 +198,8 @@ const MainApp = () => {
             enablePan={false}
             enableRotate={true}
             rotateSpeed={0.5}
+            autoRotate={true}
+            autoRotateSpeed={0.8}
             target={[0, 0, 0]}
           />
         </Canvas>

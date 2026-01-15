@@ -62,6 +62,30 @@ const Navbar = ({ isSystemOnline }) => {
                         )}
                     </Link>
                     <Link
+                        to="/prediction"
+                        className={clsx(
+                            "relative h-10 px-6 text-sm font-medium transition-all duration-300 uppercase tracking-widest clip-path-slant flex items-center",
+                            location.pathname === '/prediction' ? "text-white" : "text-gray-500 hover:text-white"
+                        )}
+                    >
+                        Prediction
+                        {location.pathname === '/prediction' && (
+                            <span className="absolute bottom-0 left-0 w-full h-[2px] bg-crisis-red shadow-[0_0_10px_#FF3B30]"></span>
+                        )}
+                    </Link>
+                    <Link
+                        to="/public-alerts"
+                        className={clsx(
+                            "relative h-10 px-6 text-sm font-medium transition-all duration-300 uppercase tracking-widest clip-path-slant flex items-center",
+                            location.pathname === '/public-alerts' ? "text-white" : "text-gray-500 hover:text-white"
+                        )}
+                    >
+                        Public Alerts
+                        {location.pathname === '/public-alerts' && (
+                            <span className="absolute bottom-0 left-0 w-full h-[2px] bg-crisis-red shadow-[0_0_10px_#FF3B30]"></span>
+                        )}
+                    </Link>
+                    <Link
                         to="/intelligence"
                         className={clsx(
                             "relative h-10 px-6 text-sm font-medium transition-all duration-300 uppercase tracking-widest clip-path-slant flex items-center",
@@ -153,6 +177,8 @@ const Navbar = ({ isSystemOnline }) => {
                 <div className="lg:hidden bg-black/95 backdrop-blur-xl border-t border-white/10 pointer-events-auto">
                     <div className="flex flex-col p-4 space-y-4">
                         <Link to="/" onClick={() => setIsMenuOpen(false)} className="text-lg font-display text-gray-300 hover:text-white">OVERVIEW</Link>
+                        <Link to="/prediction" onClick={() => setIsMenuOpen(false)} className="text-lg font-display text-gray-300 hover:text-white">PREDICTION</Link>
+                        <Link to="/public-alerts" onClick={() => setIsMenuOpen(false)} className="text-lg font-display text-gray-300 hover:text-white">PUBLIC ALERTS</Link>
                         <Link to="/intelligence" onClick={() => setIsMenuOpen(false)} className="text-lg font-display text-gray-300 hover:text-white">INCIDENTS</Link>
                         <Link to="/coordination" onClick={() => setIsMenuOpen(false)} className="text-lg font-display text-gray-300 hover:text-white">COORDINATION</Link>
                         <Link to="/analytics" onClick={() => setIsMenuOpen(false)} className="text-lg font-display text-gray-300 hover:text-white">ANALYTICS</Link>
