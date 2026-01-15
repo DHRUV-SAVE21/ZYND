@@ -75,7 +75,49 @@ const MainApp = () => {
   const [rotation, setRotation] = useState(0);
   const [isSystemOnline, setIsSystemOnline] = useState(false);
   const [bootFlash, setBootFlash] = useState(false);
+  const [hasActiveCrisis, setHasActiveCrisis] = useState(false);
   const location = useLocation();
+
+  // Auto-initialize system when user logs in
+  useEffect(() => {
+    if (user && !isSystemOnline) {
+      setIsSystemOnline(true);
+    }
+  }, [user]);
+
+  // Check for active critical incidents
+  useEffect(() => {
+    if (!isSystemOnline) return;
+
+    const checkCrisis = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${apiUrl}/api/crisis/active`);
+        const data = await res.json();
+        
+        // Show warning only if there are critical or high severity incidents
+        const criticalIncidents = data.crises?.filter(
+          c => c.severity === 'critical' || c.severity === 'high'
+        ) || [];
+        
+        console.log('🚨 Crisis Check:', {
+          total: data.crises?.length || 0,
+          critical: criticalIncidents.length,
+          incidents: criticalIncidents
+        });
+        
+        setHasActiveCrisis(criticalIncidents.length > 0);
+      } catch (error) {
+        console.error('Failed to check crisis status:', error);
+        setHasActiveCrisis(false);
+      }
+    };
+
+    checkCrisis();
+    // Check every 30 seconds
+    const interval = setInterval(checkCrisis, 30000);
+    return () => clearInterval(interval);
+  }, [isSystemOnline]);
 
   useEffect(() => {
     if (isSystemOnline) {
@@ -131,7 +173,7 @@ const MainApp = () => {
 
       {/* 2D UI Layer - Navbar only shows if NOT on login page */}
       {!isLoginPage && <Navbar user={user} signOut={signOut} isSystemOnline={isSystemOnline} />}
-      {isSystemOnline && <EarlyWarningPanel />}
+      {hasActiveCrisis && <EarlyWarningPanel />}
 
       {/* Content Routes - Scrollable Container for Pages */}
       <div className={`absolute inset-0 ${!isLoginPage ? 'pt-[80px]' : ''} z-20 overflow-y-auto custom-scrollbar pointer-events-none`}>

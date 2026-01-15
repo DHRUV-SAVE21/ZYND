@@ -6,7 +6,7 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLogin, setIsLogin] = useState(true);
-    const { signIn, signUp } = useAuth();
+    const { login, signUp } = useAuth();
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -16,7 +16,7 @@ const Login = () => {
         setError(null);
         try {
             if (isLogin) {
-                await signIn(email, password);
+                await login(email, password);
             } else {
                 await signUp(email, password);
             }

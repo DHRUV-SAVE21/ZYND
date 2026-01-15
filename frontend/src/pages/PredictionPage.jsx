@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Map, TrendingUp, CloudRain, Droplets, AlertTriangle, Clock, ChevronRight, Activity } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { Map, TrendingUp, CloudRain, Droplets, AlertTriangle, Clock, ChevronRight, Activity, MapPin, Wind, Thermometer, Eye, Users } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
+import FloodPredictionMap from '../components/FloodPredictionMap';
 
 // Mock Data for Charts
 const floodData = [
@@ -14,8 +15,91 @@ const floodData = [
     { time: '24:00', level: 5.1, rain: 5 },
 ];
 
+const historicalData = [
+    { year: '2020', floods: 2 },
+    { year: '2021', floods: 4 },
+    { year: '2022', floods: 3 },
+    { year: '2023', floods: 7 },
+    { year: '2024', floods: 5 },
+    { year: '2025', floods: 9 },
+];
+
+const timelineLabels = ['Now', '+6 Hours', '+24 Hours', '+7 Days'];
+
+const timelineData = {
+    0: { // Now
+        criticalZones: 3,
+        highRiskZones: 2,
+        affectedPop: 78000,
+        rainfall: 48.5,
+        soilSat: 92,
+        riverLevel: 3.2
+    },
+    1: { // +6 hours
+        criticalZones: 4,
+        highRiskZones: 4,
+        affectedPop: 139000,
+        rainfall: 55.2,
+        soilSat: 96,
+        riverLevel: 4.1
+    },
+    2: { // +24 hours
+        criticalZones: 6,
+        highRiskZones: 5,
+        affectedPop: 276000,
+        rainfall: 42.0,
+        soilSat: 98,
+        riverLevel: 5.8
+    },
+    3: { // +7 days
+        criticalZones: 0,
+        highRiskZones: 3,
+        affectedPop: 45000,
+        rainfall: 18.5,
+        soilSat: 75,
+        riverLevel: 2.1
+    }
+};
+
 const PredictionPage = () => {
-    const [timeline, setTimeline] = useState(0); // 0 = Now, 1 = +6h, etc.
+    const [timeline, setTimeline] = useState(0); // 0 = Now, 1 = +6h, 2 = +24h, 3 = +7d
+    const [userLocation, setUserLocation] = useState(null);
+    const [locationError, setLocationError] = useState(null);
+    const [isLoadingLocation, setIsLoadingLocation] = useState(true);
+    const [currentData, setCurrentData] = useState(timelineData[0]);
+
+    // Update current data when timeline changes
+    useEffect(() => {
+        setCurrentData(timelineData[timeline]);
+    }, [timeline]);
+
+    // Get user's actual location
+    useEffect(() => {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setUserLocation({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    });
+                    setIsLoadingLocation(false);
+                    console.log('User location detected:', position.coords.latitude, position.coords.longitude);
+                },
+                (error) => {
+                    console.error('Geolocation error:', error.message);
+                    setLocationError(error.message);
+                    // Fallback to Mumbai coordinates (Mithi River area)
+                    setUserLocation({ latitude: 19.0760, longitude: 72.8777 });
+                    setIsLoadingLocation(false);
+                }
+            );
+        } else {
+            setLocationError('Geolocation not supported');
+            // Fallback to Mumbai coordinates (Mithi River area)
+            setUserLocation({ latitude: 19.0760, longitude: 72.8777 });
+            setIsLoadingLocation(false);
+        }
+    }, []);
 
     return (
         <div className="min-h-screen bg-transparent text-white pt-24 pb-12 px-4 md:px-8 overflow-x-hidden">
@@ -46,55 +130,48 @@ const PredictionPage = () => {
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                {/* Main Map Visualization (Mock) */}
-                <div className="lg:col-span-2 bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl p-1 relative overflow-hidden h-[400px] md:h-[500px] group">
-                    <div className="absolute inset-0 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/0,0,2/800x600?access_token=pk.mock')] bg-cover opacity-50"></div>
-                    {/* Custom CSS Grid for "Map" feel if image fails */}
-                    <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
-
-                    <div className="absolute top-6 left-6 bg-black/80 backdrop-blur-md border border-white/10 p-4 rounded-xl z-10">
-                        <h3 className="text-white font-bold mb-1 flex items-center gap-2">
-                            <Map className="w-4 h-4 text-cyan-500" /> Regional Risk Map
-                        </h3>
-                        <p className="text-xs text-gray-400">Interactive Zones • Live</p>
+                {/* Main Map Visualization - FLOOD ZONES */}
+                <div className="lg:col-span-2 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl p-6 relative overflow-hidden">
+                    <div className="mb-4 flex justify-between items-start">
+                        <div>
+                            <h3 className="text-white font-bold mb-1 flex items-center gap-2">
+                                <Map className="w-5 h-5 text-cyan-500" /> Flood Risk Prediction Map
+                            </h3>
+                            <p className="text-xs text-gray-400">Color-Coded Risk Zones • {timelineLabels[timeline]}</p>
+                        </div>
+                        {isLoadingLocation && (
+                            <div className="flex items-center gap-2 text-xs text-gray-400">
+                                <div className="animate-spin h-3 w-3 border-2 border-cyan-500 border-t-transparent rounded-full"></div>
+                                Detecting location...
+                            </div>
+                        )}
+                        {locationError && (
+                            <div className="text-xs text-amber-400 flex items-center gap-1">
+                                <MapPin className="w-3 h-3" /> Using default location
+                            </div>
+                        )}
+                        {userLocation && !isLoadingLocation && !locationError && (
+                            <div className="text-xs text-green-400 flex items-center gap-1">
+                                <MapPin className="w-3 h-3 animate-pulse" /> Your location detected
+                            </div>
+                        )}
                     </div>
 
-                    {/* Heatmap Risk Zones Overlay */}
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-60 mix-blend-screen">
-                        {/* Critical Zone (Red) */}
-                        <motion.circle
-                            cx="70%" cy="40%" r="15%"
-                            fill="url(#gradRed)"
-                            animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
-                            transition={{ duration: 3, repeat: Infinity }}
+                    {/* Flood Prediction Map with Zones */}
+                    {userLocation && (
+                        <FloodPredictionMap 
+                            userLocation={userLocation}
+                            timeline={timeline}
                         />
-                        {/* Warning Zone (Orange) */}
-                        <circle cx="40%" cy="60%" r="20%" fill="url(#gradOrange)" opacity="0.4" />
-                        {/* Safe Zone (Green) */}
-                        <circle cx="20%" cy="30%" r="12%" fill="url(#gradGreen)" opacity="0.3" />
+                    )}
 
-                        <defs>
-                            <radialGradient id="gradRed">
-                                <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
-                                <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
-                            </radialGradient>
-                            <radialGradient id="gradOrange">
-                                <stop offset="0%" stopColor="#f97316" stopOpacity="0.6" />
-                                <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
-                            </radialGradient>
-                            <radialGradient id="gradGreen">
-                                <stop offset="0%" stopColor="#22c55e" stopOpacity="0.4" />
-                                <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
-                            </radialGradient>
-                        </defs>
-                    </svg>
-
-                    <div className="absolute bottom-6 left-6 right-6 bg-black/90 backdrop-blur-xl border border-white/10 p-4 rounded-xl">
+                    {/* Timeline Slider below map */}
+                    <div className="mt-4 bg-black/90 backdrop-blur-xl border border-white/10 p-4 rounded-xl">
                         <div className="flex justify-between text-xs text-gray-400 mb-2 font-mono uppercase">
-                            <span>Now</span>
-                            <span>+12 Hours</span>
-                            <span>+24 Hours</span>
-                            <span>+7 Days</span>
+                            <span className={timeline === 0 ? 'text-cyan-400 font-bold' : ''}>Now</span>
+                            <span className={timeline === 1 ? 'text-cyan-400 font-bold' : ''}>+6 Hours</span>
+                            <span className={timeline === 2 ? 'text-cyan-400 font-bold' : ''}>+24 Hours</span>
+                            <span className={timeline === 3 ? 'text-cyan-400 font-bold' : ''}>+7 Days</span>
                         </div>
                         <input
                             type="range"
@@ -102,29 +179,35 @@ const PredictionPage = () => {
                             max="3"
                             step="1"
                             value={timeline}
-                            onChange={(e) => setTimeline(e.target.value)}
+                            onChange={(e) => setTimeline(parseInt(e.target.value))}
                             className="w-full accent-cyan-500 h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer"
                         />
+                        <div className="mt-3 text-center text-sm text-white font-bold">
+                            Viewing: {timelineLabels[timeline]}
+                        </div>
                     </div>
                 </div>
 
                 {/* Risk Metrics Column */}
                 <div className="space-y-6">
 
-                    {/* Risk Card 1 */}
+                    {/* Risk Overview Card */}
                     <div className="bg-[#0a0a0a] border border-red-500/30 rounded-2xl p-6 relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-4 opacity-10">
-                            <AlertTriangle size={100} className="text-red-500" />
+                            <AlertTriangle size={80} className="text-red-500" />
                         </div>
-                        <h3 className="text-gray-400 font-mono text-xs uppercase mb-1">Critical Alert</h3>
-                        <div className="text-3xl font-bold text-white mb-2">Sector 4 (North)</div>
-                        <div className="text-red-400 font-bold mb-4">98% Overflow Probability</div>
-                        <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden mb-4">
-                            <div className="h-full bg-red-500 w-[98%]"></div>
+                        <h3 className="text-gray-400 font-mono text-xs uppercase mb-1">Critical Zones</h3>
+                        <div className="text-4xl font-bold text-white mb-2">{currentData.criticalZones}</div>
+                        <div className="text-red-400 font-bold mb-4">IMMEDIATE THREAT</div>
+                        <div className="flex justify-between items-center text-xs mb-2">
+                            <span className="text-gray-400">High Risk Zones</span>
+                            <span className="text-orange-400 font-mono font-bold">{currentData.highRiskZones}</span>
                         </div>
                         <div className="flex justify-between items-center text-xs">
                             <span className="text-gray-400">Affected Population</span>
-                            <span className="text-white font-mono font-bold">1.2M Citizens</span>
+                            <span className="text-white font-mono font-bold flex items-center gap-1">
+                                <Users size={12} /> {(currentData.affectedPop / 1000).toFixed(0)}K
+                            </span>
                         </div>
                     </div>
 
@@ -133,25 +216,38 @@ const PredictionPage = () => {
                         <h3 className="text-white font-bold mb-4 flex items-center gap-2">
                             <CloudRain className="w-5 h-5 text-blue-400" /> Weather Telemetry
                         </h3>
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
-                                <div className="text-sm text-gray-400">Rainfall Intensity</div>
-                                <div className="text-xl font-bold text-blue-400">45 mm/h</div>
+                                <div className="flex items-center gap-2 text-sm text-gray-400">
+                                    <Droplets size={14} className="text-blue-400" />
+                                    Rainfall Intensity
+                                </div>
+                                <div className="text-xl font-bold text-blue-400">{currentData.rainfall} mm/h</div>
                             </div>
                             <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
-                                <div className="text-sm text-gray-400">Soil Saturation</div>
-                                <div className="text-xl font-bold text-amber-400">92%</div>
+                                <div className="flex items-center gap-2 text-sm text-gray-400">
+                                    <Activity size={14} className="text-amber-400" />
+                                    Soil Saturation
+                                </div>
+                                <div className="text-xl font-bold text-amber-400">{currentData.soilSat}%</div>
+                            </div>
+                            <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
+                                <div className="flex items-center gap-2 text-sm text-gray-400">
+                                    <TrendingUp size={14} className="text-red-400" />
+                                    River Level
+                                </div>
+                                <div className="text-xl font-bold text-red-400">{currentData.riverLevel}m</div>
                             </div>
                         </div>
                     </div>
 
                     {/* Predictive Chart */}
-                    <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 h-[250px] flex flex-col">
+                    <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 flex flex-col" style={{ minHeight: '250px' }}>
                         <h3 className="text-white font-bold mb-2 flex items-center gap-2 text-sm">
-                            <TrendingUp className="w-4 h-4 text-green-400" /> Water Level Forecast
+                            <TrendingUp className="w-4 h-4 text-green-400" /> Water Level Forecast (24h)
                         </h3>
-                        <div className="flex-1 w-full min-h-0">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div className="flex-1 w-full" style={{ minHeight: '180px' }}>
+                            <ResponsiveContainer width="100%" height={180}>
                                 <AreaChart data={floodData}>
                                     <defs>
                                         <linearGradient id="colorLevel" x1="0" y1="0" x2="0" y2="1">
@@ -169,6 +265,27 @@ const PredictionPage = () => {
                                     <Area type="monotone" dataKey="level" stroke="#06b6d4" fillOpacity={1} fill="url(#colorLevel)" />
                                 </AreaChart>
                             </ResponsiveContainer>
+                        </div>
+                    </div>
+
+                    {/* Historical Pattern Comparison */}
+                    <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6">
+                        <h3 className="text-white font-bold mb-4 flex items-center gap-2 text-sm">
+                            <Clock className="w-4 h-4 text-purple-400" /> Historical Patterns (Annual Floods)
+                        </h3>
+                        <ResponsiveContainer width="100%" height={150}>
+                            <BarChart data={historicalData}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                                <XAxis dataKey="year" stroke="#666" fontSize={10} tickLine={false} />
+                                <YAxis stroke="#666" fontSize={10} tickLine={false} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#000', borderColor: '#333', color: '#fff' }}
+                                />
+                                <Bar dataKey="floods" fill="#a855f7" radius={[8, 8, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                        <div className="mt-3 text-xs text-gray-400 text-center">
+                            Trend: <span className="text-red-400 font-bold">+80% increase</span> since 2020
                         </div>
                     </div>
 

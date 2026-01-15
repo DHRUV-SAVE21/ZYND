@@ -47,14 +47,46 @@ export const AuthProvider = ({ children }) => {
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
-                .single();
+                .maybeSingle(); // Use maybeSingle() instead of single()
 
-            if (error) throw error;
-            setProfile(data);
+            if (error) {
+                console.warn('Profile fetch error:', error.message);
+                setProfile(null);
+            } else if (!data) {
+                // No profile exists yet - create one for existing user
+                console.log('No profile found, creating one...');
+                await createProfileForExistingUser(userId);
+            } else {
+                setProfile(data);
+            }
         } catch (error) {
             console.error('Error fetching profile:', error);
+            setProfile(null);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const createProfileForExistingUser = async (userId) => {
+        try {
+            const { data: userData } = await supabase.auth.getUser();
+            const { data, error } = await supabase
+                .from('profiles')
+                .insert({
+                    id: userId,
+                    email: userData.user.email,
+                    full_name: userData.user.user_metadata?.full_name || '',
+                    role: 'user'
+                })
+                .select()
+                .single();
+
+            if (!error && data) {
+                setProfile(data);
+                console.log('✅ Profile created for existing user');
+            }
+        } catch (error) {
+            console.error('Failed to create profile:', error);
         }
     };
 

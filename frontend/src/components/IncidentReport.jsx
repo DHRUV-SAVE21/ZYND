@@ -65,7 +65,7 @@ const IncidentReport = ({ onSuccess }) => {
         try {
             // Point to FastAPI Backend
             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-            const response = await fetch(`${apiUrl}/crisis/alert`, {
+            const response = await fetch(`${apiUrl}/api/crisis/alert`, {
                 method: 'POST',
                 body: formDataToSend
             });

@@ -1,5 +1,16 @@
-import React, { useState } from 'react';
-import { Truck, Users, Package, Navigation, Zap, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Truck, Users, Package, Navigation, Zap, CheckCircle, MapPin } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix leaflet default marker icons
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 import { motion } from 'framer-motion';
 
 const ResourcesPage = () => {
@@ -26,39 +37,58 @@ const ResourcesPage = () => {
 
                 {/* 1. Map View */}
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl h-[500px] relative overflow-hidden group">
-                        {/* Fake Map BG */}
-                        <div className="absolute inset-0 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/-122.42,37.78,12/1000x600?access_token=pk.mock')] bg-cover opacity-40 grayscale group-hover:grayscale-0 transition-all duration-700"></div>
+                    <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl h-[500px] relative overflow-hidden">
+                        <MapContainer
+                            center={[28.6139, 77.2090]}
+                            zoom={11}
+                            style={{ height: '100%', width: '100%' }}
+                            zoomControl={true}
+                        >
+                            <TileLayer
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                attribution='&copy; OpenStreetMap'
+                            />
+                            
+                            {/* Incident Marker */}
+                            <Marker position={[28.7041, 77.2025]}>
+                                <Popup>
+                                    <strong>Yamuna Flood Zone</strong><br/>
+                                    Critical - Active Response
+                                </Popup>
+                            </Marker>
+                            
+                            {/* Resource Hub */}
+                            <Marker position={[28.6500, 77.2200]}>
+                                <Popup>
+                                    <strong>Resource Hub</strong><br/>
+                                    12 Units Available
+                                </Popup>
+                            </Marker>
 
-                        {/* Overlay Controls */}
-                        <div className="absolute top-6 left-6 flex flex-col gap-2">
+                            {/* Deployment Route */}
+                            {deployed && (
+                                <Polyline 
+                                    positions={[
+                                        [28.6500, 77.2200],
+                                        [28.6700, 77.2100],
+                                        [28.7041, 77.2025]
+                                    ]}
+                                    pathOptions={{ color: '#3b82f6', weight: 3, dashArray: '10, 10' }}
+                                />
+                            )}
+                        </MapContainer>
+
+                        {/* Overlay Stats */}
+                        <div className="absolute top-6 left-6 flex flex-col gap-2 z-[1000]">
                             <div className="bg-black/90 p-3 rounded-lg border border-white/10 flex items-center gap-3">
                                 <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
-                                <span className="text-sm font-bold">12 Active Convoys</span>
+                                <span className="text-sm font-bold text-white">12 Active Convoys</span>
                             </div>
                             <div className="bg-black/90 p-3 rounded-lg border border-white/10 flex items-center gap-3">
                                 <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                                <span className="text-sm font-bold">3 Pending Requests</span>
+                                <span className="text-sm font-bold text-white">3 Pending Requests</span>
                             </div>
                         </div>
-
-                        {/* Deployment Route Lines (SVG Overlay) */}
-                        {deployed && (
-                            <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                                <motion.path
-                                    d="M 200 400 Q 400 300 600 200"
-                                    fill="transparent"
-                                    stroke="#3b82f6"
-                                    strokeWidth="3"
-                                    strokeDasharray="10 10"
-                                    initial={{ pathLength: 0 }}
-                                    animate={{ pathLength: 1 }}
-                                    transition={{ duration: 2 }}
-                                />
-                                <circle cx="200" cy="400" r="8" fill="#ef4444" /> {/* Incident */}
-                                <circle cx="600" cy="200" r="8" fill="#3b82f6" /> {/* Hub */}
-                            </svg>
-                        )}
                     </div>
                 </div>
 

@@ -32,8 +32,8 @@ const Navbar = ({ isSystemOnline }) => {
                         </span>
                     </div>
                     <div className="text-[10px] font-mono text-gray-500 flex gap-2">
-                        <span>UTC</span>
-                        <span className="text-white">{new Date().toISOString().slice(11, 19)}</span>
+                        <span>LOCAL</span>
+                        <span className="text-white">{new Date().toLocaleTimeString('en-US', { hour12: false })}</span>
                     </div>
                 </div>
             </div>

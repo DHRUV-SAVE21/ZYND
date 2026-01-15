@@ -25,7 +25,7 @@ const CrisisDashboard = () => {
         fetchActiveCrises();
 
         const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:8000';
-        const ws = new WebSocket(`${wsUrl}/crisis/ws/dashboard`);
+        const ws = new WebSocket(`${wsUrl}/ws/dashboard`);
         ws.onopen = () => console.log('Connected to Crisis Dispatch');
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -56,7 +56,7 @@ const CrisisDashboard = () => {
     const fetchActiveCrises = async () => {
         try {
             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-            const res = await fetch(`${apiUrl}/crisis/active`);
+            const res = await fetch(`${apiUrl}/api/crisis/active`);
             const data = await res.json();
             setActiveCrises(data.crises || []);
         } catch (e) {
@@ -134,9 +134,38 @@ const CrisisDashboard = () => {
                                     <span className="bg-gray-800 px-2 py-1 rounded text-blue-400">Status: {selectedIncident.status}</span>
                                 </div>
                                 {selectedIncident.ai_analysis && (
-                                    <div className="mt-3 bg-blue-900/20 p-2 rounded border border-blue-500/30 text-xs">
-                                        <strong className="text-blue-400 block mb-1">AI Tactical Analysis:</strong>
-                                        {selectedIncident.ai_analysis.reasoning}
+                                    <div className="mt-3 bg-blue-900/20 p-3 rounded border border-blue-500/30 text-sm">
+                                        <strong className="text-blue-400 block mb-2 flex items-center gap-2">
+                                            <Activity size={14} /> AI Tactical Analysis:
+                                        </strong>
+                                        <div className="space-y-2">
+                                            {selectedIncident.ai_analysis.predicted_peak && (
+                                                <div className="text-gray-300">
+                                                    <span className="text-gray-500">Predicted Peak:</span> {new Date(selectedIncident.ai_analysis.predicted_peak).toLocaleString()}
+                                                </div>
+                                            )}
+                                            {selectedIncident.ai_analysis.affected_area_km2 && (
+                                                <div className="text-gray-300">
+                                                    <span className="text-gray-500">Affected Area:</span> {selectedIncident.ai_analysis.affected_area_km2} km²
+                                                </div>
+                                            )}
+                                            {selectedIncident.ai_analysis.population_at_risk && (
+                                                <div className="text-gray-300">
+                                                    <span className="text-gray-500">Population at Risk:</span> {selectedIncident.ai_analysis.population_at_risk.toLocaleString()} people
+                                                </div>
+                                            )}
+                                            {selectedIncident.ai_analysis.evacuation_priority && (
+                                                <div className="text-orange-400 font-bold">
+                                                    Evacuation Priority: {selectedIncident.ai_analysis.evacuation_priority.toUpperCase()}
+                                                </div>
+                                            )}
+                                            {selectedIncident.ai_analysis.water_rise_rate_cm_per_hour && (
+                                                <div className="text-red-400 font-bold" title="Water level rising at this rate - critical flood indicator">
+                                                    💧 Water Rise Rate: {selectedIncident.ai_analysis.water_rise_rate_cm_per_hour} cm/hour
+                                                    <span className="text-xs text-gray-400 ml-2">(centimeters per hour)</span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -153,7 +182,7 @@ const CrisisDashboard = () => {
                                 <IncidentReport onSuccess={async (newId) => {
                                     // Refresh data
                                     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-                                    const res = await fetch(`${apiUrl}/crisis/active`);
+                                    const res = await fetch(`${apiUrl}/api/crisis/active`);
                                     const data = await res.json();
                                     const freshList = data.crises || [];
                                     setActiveCrises(freshList);

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, Clock, Radio, ShieldAlert, Activity, BarChart3, Zap } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { AlertTriangle, Clock, Radio, ShieldAlert, Activity, BarChart3, Zap, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const EarlyWarningPanel = () => {
     const [timeLeft, setTimeLeft] = useState(14400); // 4 hours in seconds
     const [phase, setPhase] = useState('WARNING'); // MONITORING, WARNING, EVACUATION
+    const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -22,24 +23,36 @@ const EarlyWarningPanel = () => {
 
     return (
         <div className="fixed bottom-0 left-0 right-0 md:left-auto md:top-auto md:bottom-6 md:right-6 z-50 pointer-events-none flex justify-center md:block">
-            <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="bg-black/90 backdrop-blur-xl border border-red-500/50 p-6 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)] w-80 pointer-events-auto"
-            >
-                {/* Header */}
-                <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-2">
-                        <span className="relative flex h-3 w-3">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                        </span>
-                        <h3 className="text-white font-bold font-display tracking-wide">EARLY WARNING</h3>
-                    </div>
-                    <span className="bg-red-500/20 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded border border-red-500/30">
-                        LEVEL 3
-                    </span>
-                </div>
+            <AnimatePresence>
+                {isVisible && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 50 }}
+                        className="bg-black/90 backdrop-blur-xl border border-red-500/50 p-6 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)] w-80 pointer-events-auto"
+                    >
+                        {/* Header */}
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center gap-2">
+                                <span className="relative flex h-3 w-3">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                </span>
+                                <h3 className="text-white font-bold font-display tracking-wide">EARLY WARNING</h3>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="bg-red-500/20 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded border border-red-500/30">
+                                    LEVEL 3
+                                </span>
+                                <button 
+                                    onClick={() => setIsVisible(false)}
+                                    className="text-gray-400 hover:text-white transition-colors p-1 hover:bg-white/10 rounded"
+                                    title="Close"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
+                        </div>
 
                 {/* Countdown */}
                 <div className="text-center py-4 border-y border-white/10 mb-4 bg-red-950/20 rounded-lg">
@@ -100,9 +113,11 @@ const EarlyWarningPanel = () => {
                         </div>
                         <span className="text-[9px] text-gray-400 uppercase font-bold">Units</span>
                     </a>
-                </div>
+                    </div>
 
-            </motion.div>
+                </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
