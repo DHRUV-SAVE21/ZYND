@@ -48,8 +48,8 @@ GEMINI_API_KEY=your_gemini_key
 
 ### Add Environment Variables
 ```env
-VITE_API_URL=https://your-railway-app.up.railway.app
-VITE_WS_URL=wss://your-railway-app.up.railway.app
+VITE_API_URL=https://sankatsaathi.up.railway.app/health
+VITE_WS_URL=wss://sankatsaathi.up.railway.app/health
 VITE_SUPABASE_URL=https://xxxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=your_anon_key
 ```
